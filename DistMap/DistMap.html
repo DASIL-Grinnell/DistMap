@@ -10,6 +10,9 @@
 		
 	</head>
 	<body onload="preProcess();">
+		<div id="load" style="width:100%; height:100%;">
+			<div id="loadText" style="font-size:24px; position:absolute; top:50%; left:50%; transform: translateX(-50%) translateY(-50%);">Loading...</div>
+		</div>
         <select id="dispType" onchange="show(slider.value());">
             <option value="gradient">Gradient</option>
             <option value="party">Party</option>

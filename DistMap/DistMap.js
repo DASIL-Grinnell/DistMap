@@ -11,12 +11,14 @@ var path = d3.geo.path().projection(projection);
 var file = "VotingDataforD3AllYears.json";
 var minYear = -1;
 var maxYear = -1;
+var myYear;
 
 var data;
 
 var svgNaming = ["gradient", "party"];
 
 var slider;
+var interval;
 
 function preProcess(){
 	d3.json(file, function(error, json){	
@@ -34,9 +36,15 @@ function preProcess(){
 		}
 		
 		load();
-		dispYear(minYear);
-		show(minYear);
+		setYear(minYear);
+		document.getElementById("load").style.display = "none";
 	});
+}
+
+function setYear(year){
+	myYear = year;
+	dispYear(year);
+	show(year);
 }
 
 function show(year){
@@ -105,8 +113,26 @@ function load(){
 							}
 						}
 					});
+			//document.getElementById("loadText").innerHTML = "Loading... (" + curYear*(type+1) + "/" + (maxYear * 2) + ")";
 		}
 	}
+	
+	//Add legend
+	drawLegend();
+	
+	//Setup play button
+	d3.select("body") //Sets up and initializes the play button
+	.append("div")
+	.attr("id", "playContent")
+	.style("width", width+"px")
+	.style("margin-left", "15px")
+		.append("div")
+		.attr("id", "play")
+		.attr("onclick", "togglePlay();")
+			.append("img")
+			.attr("id", "playImg")
+			.attr("src", "img/play.png")
+			.attr("data-status", "paused");
 
 	//Setup slider
 	var scale = d3.scale.linear()
@@ -120,15 +146,13 @@ function load(){
 	slider = d3.slider().scale(scale).axis(myAxis)
 					.on("slide", function(evt, value, i){
 						value = 2 * Math.round(value / 2); //Round to nearest even number
-						slider.value(value);
-						dispYear(value);
-						show(value);
+						//slider.value(value);
+						setYear(value);
 					})
 					.on("slideend", function(evt, value, i){
 						value = 2 * Math.round(value / 2); //Round to nearest even number
 						slider.value(value);
-						dispYear(value);
-						show(value);
+						setYear(value);
 					});
 	
 	//Add slider to DOM
@@ -136,8 +160,85 @@ function load(){
 		.append("div")
 		.attr("id", "slider")
 		.style("margin-top","5px")
-		.style("margin-left","30px")
-		.style("width", width-60 + "px")
+		.style("margin-left","80px")
+		.style("width", width-120 + "px")
 		.call(slider);
+}
+
+function togglePlay(){
+	var btn = document.getElementById("play");
+	var img = play.getElementsByTagName("img")[0];
+	var playStatus = img.getAttribute("data-status");
 	
+	if(playStatus == "paused"){
+		img.setAttribute("data-status", "playing");
+		img.src = "img/pause.png";
+		playAnimation();
+	}
+	else{
+		img.setAttribute("data-status", "paused");
+		img.src = "img/play.png";
+		pauseAnimation();
+	}
+}
+
+function playAnimation(){
+	animate();
+	interval = setInterval(animate,1000);
+}
+
+function pauseAnimation(){
+	clearInterval(interval);
+}
+
+function animate(){
+	myYear += 2;
+	if(myYear > maxYear){
+		myYear -= 2;
+	}
+	else{
+		setYear(myYear);
+		slider.value(myYear);
+	}
+	
+	if(myYear == maxYear){
+		togglePlay();
+	}
+}
+
+function drawLegend(){
+	var ySpacing = 30;
+	var boxSize = 22;
+	
+	var colors = ["blue", "red", "yellow", "black"];
+	var categories = ["Democrat", "Republican", "Independant", "No Data"];
+	
+	var svg = d3.select("body").append("svg")
+				.style("position", "absolute")
+				.style("top", "15%")
+				.style("left", width - 20);
+	
+	var legend = svg.append("g")
+		.attr("class", "legend")
+		.attr("height", categories.length * ySpacing)
+		.attr("width", 125)
+		.attr('transform', "translate("+(0)+",30)");
+		
+	for(var i = 0; i < categories.length; ++i){
+		legend.append("rect")
+			.attr("x", 0)
+			.attr("y", function(){
+				return ySpacing * i;
+			},i)
+			.attr("width", boxSize)
+			.attr("height", boxSize)
+			.style("fill", colors[i]);
+			
+		legend.append("text")
+			.attr("x", boxSize+8)
+			.attr("y", function(){
+				return ySpacing * i + 16;
+			},i)
+			.text(function(){return categories[i]});
+	}
 }
