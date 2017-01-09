@@ -213,16 +213,25 @@ function drawLegend(){
 	var colors = ["blue", "red", "yellow", "black"];
 	var categories = ["Democrat", "Republican", "Independant", "No Data"];
 	
+	var drop = document.getElementById("dispType").value;
+	
+	if(drop == "gradient"){
+		colors = ["blue", colorScale(.25), colorScale(.5), colorScale(.75), "red", "yellow", "black"];
+		categories = ["Democrat", "25%/75% (D/R)", "50%/50% (D/R)", "75%/25% (D/R)", "Republican", "Independant", "No Data"];
+	}
+	
 	var svg = d3.select("body").append("svg")
+				.attr("id", "legend")
 				.style("position", "absolute")
 				.style("top", "15%")
-				.style("left", width - 20);
+				.style("left", width - 20)
+				.style("height", categories.length * ySpacing);
 	
 	var legend = svg.append("g")
 		.attr("class", "legend")
 		.attr("height", categories.length * ySpacing)
-		.attr("width", 125)
-		.attr('transform', "translate("+(0)+",30)");
+		.attr("width", 125);
+		//.attr('transform', "translate("+(0)+",0)");
 		
 	for(var i = 0; i < categories.length; ++i){
 		legend.append("rect")
@@ -241,4 +250,9 @@ function drawLegend(){
 			},i)
 			.text(function(){return categories[i]});
 	}
+}
+
+function redrawLegend(){
+	d3.select("#legend").remove();
+	drawLegend();
 }
