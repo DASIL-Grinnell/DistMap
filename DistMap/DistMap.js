@@ -39,6 +39,11 @@ function preProcess(){
 		setYear(minYear);
 		document.getElementById("load").style.display = "none";
 	});
+	
+	document.onkeypress = function (e){
+		e = e || window.event;
+		keyPress(e.keyCode);
+	}
 }
 
 function setYear(year){
@@ -96,24 +101,26 @@ function load(){
 							return "yellow";
 						}
 						else{
+							var result;
+							if(d.properties["PLURALITYP"] == "D"){
+								result = colorScale(0);
+							}
+							else if(d.properties["PLURALITYP"] == "R"){
+								result = colorScale(1);
+							}
 							
 							if(svgNaming[type] == "gradient"){
 								var dem = parseInt(d.properties["VOTEDEM"]) || 0;
 								var rep = parseInt(d.properties["VOTEREP"]) || 0;
 								
-								return colorScale(rep / (dem + rep));
-							}
-							else{
-								if(d.properties["PLURALITYP"] == "D"){
-									return colorScale(0);
-								}
-								else if(d.properties["PLURALITYP"] == "R"){
-									return colorScale(1);
+								if(dem + rep > 0){
+									result = colorScale(rep / (dem + rep));
 								}
 							}
+							return result;
 						}
-					});
-			//document.getElementById("loadText").innerHTML = "Loading... (" + curYear*(type+1) + "/" + (maxYear * 2) + ")";
+					})
+					.on("mouseover", function(d){fillInfo(d.properties)});
 		}
 	}
 	
@@ -184,7 +191,7 @@ function togglePlay(){
 
 function playAnimation(){
 	animate();
-	interval = setInterval(animate,1000);
+	interval = setInterval(animate,1500);
 }
 
 function pauseAnimation(){
@@ -224,14 +231,14 @@ function drawLegend(){
 				.attr("id", "legend")
 				.style("position", "absolute")
 				.style("top", "15%")
-				.style("left", width - 20)
-				.style("height", categories.length * ySpacing);
+				.style("left", 20)
+				.style("height", categories.length * ySpacing)
+				.style("width", 175);
 	
 	var legend = svg.append("g")
 		.attr("class", "legend")
 		.attr("height", categories.length * ySpacing)
 		.attr("width", 125);
-		//.attr('transform', "translate("+(0)+",0)");
 		
 	for(var i = 0; i < categories.length; ++i){
 		legend.append("rect")
@@ -255,4 +262,46 @@ function drawLegend(){
 function redrawLegend(){
 	d3.select("#legend").remove();
 	drawLegend();
+}
+
+function fillInfo(prop){
+	document.getElementById("tooltip").style.display = "block";
+	document.getElementById("distName").innerHTML = prop["STATE"] + " District " + prop["DISTRICT1"];
+	var winner = prop["PLURALITYP"];
+	var demPer = prop["DEMVOTEPRO"];
+	var repPer = prop["REPVOTEPRO"];
+	var demCan = prop["DEMCANDIDA"];
+	var repCan = prop["REPCANDIDA"];
+	var demStat = prop["DEMSTATUS"];
+	var repStat = prop["REPSTATUS"];
+	
+	document.getElementById("demWin").innerHTML = "Lost";
+	document.getElementById("repWin").innerHTML = "Lost";
+	document.querySelector(".rep").style.backgroundColor = "#ffffff";
+	document.querySelector(".dem").style.backgroundColor = "#ffffff";
+	
+	if(winner == "R"){
+		document.getElementById("repWin").innerHTML = "Won";
+		document.querySelector(".rep").style.backgroundColor = "#ffb3b3";
+	}
+	if(winner == "D"){
+		document.getElementById("demWin").innerHTML = "Won";
+		document.querySelector(".dem").style.backgroundColor = "#b3b3ff";
+	}
+	
+	document.getElementById("demPer").innerHTML = demPer;
+	document.getElementById("repPer").innerHTML = repPer;
+	
+	document.getElementById("demCan").innerHTML = demCan;
+	document.getElementById("repCan").innerHTML = repCan;
+	
+	document.getElementById("demStat").innerHTML = demStat;
+	document.getElementById("repStat").innerHTML = repStat;
+	
+}
+
+function keyPress(key){
+	if(key == 0){
+		togglePlay();
+	}
 }
