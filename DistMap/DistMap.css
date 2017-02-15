@@ -18,7 +18,7 @@ body{
 #tooltip{
 	position:absolute; 
 	top:45%; 
-	left:65%;
+	right:20px;
 	width:450px;
 	height:180px;
 	border: 2px solid black;
@@ -50,4 +50,16 @@ body{
 .shape:hover{
 	stroke: #FFFF00;
 	stroke-width: 1px;
+}
+
+.text1{
+	font-size:32px;
+}
+
+.text2{
+	font-size:24px;
+}
+
+.text3{
+	font-size:16px;
 }

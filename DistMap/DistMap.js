@@ -1,14 +1,15 @@
-var width = 1200;
-var height = 600;
+var width = window.innerWidth < 1200 ? window.innerWidth : 1200;
+var height = width / 2;
 
 var colorScale = d3.scale.linear().domain([0,1]).range(["blue", "red"]);
 	
 var projection = d3.geo.albersUsa()
+					.scale(width-175)
 					.translate([width/2, height/2]);
 					
 var path = d3.geo.path().projection(projection);
 
-var file = "VotingDataforD3AllYears.json";
+var file = "new1968_2014.json";
 var minYear = -1;
 var maxYear = -1;
 var myYear;
@@ -21,6 +22,12 @@ var slider;
 var interval;
 
 function preProcess(){
+	var size = Math.floor(window.innerWidth / 50);
+	if(size < 28){ //If the screen width less than 1400
+		d3.select("#tooltip").style("width", 450 - (50 * (28 - size)));
+		d3.select(".text3").style("font-size", 16 - (1 * (28 - size)/2));
+	}
+	
 	d3.json(file, function(error, json){	
 		data = json;
 		
@@ -86,7 +93,8 @@ function load(){
 				.attr("id", svgNaming[type] + curYear)
 				.attr("class", "map")
 				.attr("width", width)
-				.attr("height", height);
+				.attr("height", height)
+				.attr("transform", "translate(175,0)");
 				
 			var defs = svg.append("defs");
 			
@@ -217,34 +225,53 @@ function drawLegend(){
 	var ySpacing = 30;
 	var boxSize = 22;
 	
+	var i = 0;
+	var offset = 0;
 	var colors = ["blue", "red", "yellow", "black"];
 	var categories = ["Democrat", "Republican", "Independant", "No Data"];
 	
-	var drop = document.getElementById("dispType").value;
+	var numCats = 4;
 	
+	var drop = document.getElementById("dispType").value;
+
 	if(drop == "gradient"){
-		colors = ["blue", colorScale(.25), colorScale(.5), colorScale(.75), "red", "yellow", "black"];
-		categories = ["Democrat", "25%/75% (D/R)", "50%/50% (D/R)", "75%/25% (D/R)", "Republican", "Independant", "No Data"];
+		numCats = 6;
 	}
 	
 	var svg = d3.select("body").append("svg")
-				.attr("id", "legend")
-				.style("position", "absolute")
-				.style("top", "15%")
-				.style("left", 20)
-				.style("height", categories.length * ySpacing)
-				.style("width", 175);
-	
+			.attr("id", "legend")
+			.style("position", "absolute")
+			.style("top", "15%")
+			.style("left", 20)
+			.style("height", numCats * ySpacing)
+			.style("width", 175);
+			
 	var legend = svg.append("g")
 		.attr("class", "legend")
-		.attr("height", categories.length * ySpacing)
+		.attr("height", numCats * ySpacing)
 		.attr("width", 125);
+	
+	if(drop == "gradient"){
+		i = 2;
+		offset = 2;
 		
-	for(var i = 0; i < categories.length; ++i){
+		var grad = legend.append("defs").append("svg:linearGradient").attr("id", "gradient").attr("x1", "100%").attr("y1", "0%").attr("x2", "100%").attr("y2", "100%").attr("spreadMethod", "pad");
+		grad.append("stop").attr("offset", "0%").attr("stop-color", "#0000FF").attr("stop-opacity", 1);
+		grad.append("stop").attr("offset", "100%").attr("stop-color", "#FF0000").attr("stop-opacity", 1);
+		
+		legend.append("text").attr("x", boxSize + 8).attr("y", 16).text("Democrat");
+		legend.append("text").attr("x", boxSize + 8).attr("y", (numCats - 3) * ySpacing + 16).text("Republican");
+		
+		legend.append("rect").attr("width", boxSize).attr("height", ((numCats - 2) * ySpacing - (ySpacing - boxSize))).style("fill", "url(#gradient)");//.attr("transform", "translate(0,10)");
+		
+	}
+	console.log(categories.length);
+	for(i; i < categories.length; ++i){
+		console.log(i);
 		legend.append("rect")
 			.attr("x", 0)
 			.attr("y", function(){
-				return ySpacing * i;
+				return ySpacing * (i + offset);
 			},i)
 			.attr("width", boxSize)
 			.attr("height", boxSize)
@@ -253,7 +280,7 @@ function drawLegend(){
 		legend.append("text")
 			.attr("x", boxSize+8)
 			.attr("y", function(){
-				return ySpacing * i + 16;
+				return ySpacing * (i + offset) + 16;
 			},i)
 			.text(function(){return categories[i]});
 	}
@@ -266,7 +293,7 @@ function redrawLegend(){
 
 function fillInfo(prop){
 	document.getElementById("tooltip").style.display = "block";
-	document.getElementById("distName").innerHTML = prop["STATE"] + " District " + prop["DISTRICT1"];
+	document.getElementById("distName").innerHTML = prop["STATE"] + " District "/* + prop["DISTRICT1"]*/;
 	var winner = prop["PLURALITYP"];
 	var demPer = prop["DEMVOTEPRO"];
 	var repPer = prop["REPVOTEPRO"];

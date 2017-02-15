@@ -14,14 +14,14 @@
 			<div id="loadText" style="font-size:24px; position:absolute; top:50%; left:50%; transform: translateX(-50%) translateY(-50%);">Loading...</div>
 		</div>
         <select id="dispType" style="position:absolute; top:15px; left:15px;" onchange="show(slider.value()); redrawLegend();">
-            <option value="gradient">Gradient</option>
-            <option value="party">Party</option>
+            <option value="gradient">Percentage of Votes</option>
+            <option value="party">Winning Party</option>
         </select>
 		<div id="year" style="position:absolute; top:40px; left:10px;"> </div>
 		<div id="tooltip">
 			<div id="distName" style="font-size:24px; margin-bottom:2px;">Text</div>
 			<div class="line" style="height:0px; width:100%;"></div>
-			<table border="1" style="width:100%">
+			<table class="text3" border="1" style="width:100%;">
 				<tr>
 					<th>Property</th>
 					<th class="dem">Dem</th>
